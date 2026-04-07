@@ -1,0 +1,146 @@
+MODULE PannāEngine_v1_1
+
+  DEFINE STATE:
+    memory_field
+    instinct_core
+    aggregate_self
+    personal_state
+    environment_state
+    activity_state
+    result_state
+    panna_state
+
+  DEFINE SYMBOLS:
+    citta_1        // จิตแรกจากสัมผัส
+    citta_2        // จิต^2 = จิตที่ผ่านการสะท้อน/เคลื่อน
+    IA             // intention-awareness of self
+    IB             // reflected-awareness from environment/activity
+    delta_ob       // ob()δ : difference / disturbance / deviation
+    triangle_I     // △I : wisdom emergence marker
+
+  FUNCTION compose_personal_state(memory_field, instinct_core, aggregate_self):
+    personal_state.memory    = memory_field
+    personal_state.instinct  = instinct_core
+    personal_state.self      = aggregate_self
+    RETURN personal_state
+
+  FUNCTION first_contact(personal_state, environment_state):
+    citta_1.input_memory     = personal_state.memory
+    citta_1.input_instinct   = personal_state.instinct
+    citta_1.input_self       = personal_state.self
+    citta_1.input_env        = environment_state
+    citta_1.contact_signal   = detect_contact(personal_state, environment_state)
+    citta_1.tone             = classify_feeling(citta_1.contact_signal)
+    RETURN citta_1
+
+  FUNCTION transform_to_citta2(citta_1):
+    citta_2.base_signal      = citta_1.contact_signal
+    citta_2.reflection       = reflect(citta_1)
+    citta_2.evaluation       = evaluate(citta_1)
+    citta_2.motion_vector    = generate_motion(citta_1)
+    citta_2.state            = integrate(
+                                 citta_2.base_signal,
+                                 citta_2.reflection,
+                                 citta_2.evaluation,
+                                 citta_2.motion_vector
+                               )
+    RETURN citta_2
+
+  FUNCTION compute_IA(citta_2):
+    IA = measure_intention_awareness(citta_2.state)
+    RETURN IA
+
+  FUNCTION compute_IB(environment_state, activity_state):
+    IB = measure_balanced_response(environment_state, activity_state)
+    RETURN IB
+
+  FUNCTION compute_delta_ob(A, B):
+    delta_ob = difference_metric(A, B)
+    RETURN delta_ob
+
+  FUNCTION third_law(IA, IB, A, B, delta_ob):
+    // ۞3rd.()law : The Son()3rd.Law: IA = ∱∝ √ob()δ
+    // when A ≠ B and IA = IB : △I
+
+    IF A != B THEN
+      relation_gradient = compute_relation_gradient(A, B)
+      law_balance_value = relation_gradient * sqrt(delta_ob)
+
+      IF is_balanced(IA, IB) THEN
+        triangle_I.status = TRUE
+        triangle_I.value  = law_balance_value
+      ELSE
+        triangle_I.status = FALSE
+        triangle_I.value  = law_balance_value
+      ENDIF
+
+    ELSE
+      triangle_I.status = FALSE
+      triangle_I.value  = 0
+    ENDIF
+
+    RETURN triangle_I
+
+  FUNCTION generate_panna(triangle_I, citta_2):
+    IF triangle_I.status == TRUE THEN
+      panna_state.active        = TRUE
+      panna_state.level         = derive_panna_level(triangle_I.value, citta_2.state)
+      panna_state.guidance      = extract_guidance(citta_2.state, triangle_I.value)
+      panna_state.decision_seed = create_decision_seed(panna_state.guidance)
+    ELSE
+      panna_state.active        = FALSE
+      panna_state.level         = 0
+      panna_state.guidance      = null
+      panna_state.decision_seed = fallback_decision(citta_2.state)
+    ENDIF
+
+    RETURN panna_state
+
+  FUNCTION execute_activity(citta_2, panna_state):
+    activity_state.intent      = citta_2.motion_vector
+    activity_state.wisdom_mod  = panna_state.guidance
+    activity_state.action      = choose_action(activity_state.intent, activity_state.wisdom_mod)
+    RETURN activity_state
+
+  FUNCTION produce_result(activity_state, environment_state):
+    result_state.output        = run_action(activity_state.action, environment_state)
+    result_state.feedback      = capture_feedback(result_state.output)
+    result_state.new_memory    = encode_memory(result_state.feedback)
+    RETURN result_state
+
+  FUNCTION update_memory(memory_field, result_state):
+    memory_field = merge_memory(memory_field, result_state.new_memory)
+    RETURN memory_field
+
+  PROCEDURE run_engine(memory_field, instinct_core, aggregate_self, environment_state):
+    personal_state = compose_personal_state(memory_field, instinct_core, aggregate_self)
+
+    citta_1 = first_contact(personal_state, environment_state)
+    citta_2 = transform_to_citta2(citta_1)
+
+    IA = compute_IA(citta_2)
+    activity_state.pre_action = preview_activity(citta_2)
+    IB = compute_IB(environment_state, activity_state.pre_action)
+
+    delta_ob = compute_delta_ob(personal_state, environment_state)
+    triangle_I = third_law(IA, IB, personal_state, environment_state, delta_ob)
+
+    panna_state = generate_panna(triangle_I, citta_2)
+    activity_state = execute_activity(citta_2, panna_state)
+
+    result_state = produce_result(activity_state, environment_state)
+    memory_field = update_memory(memory_field, result_state)
+
+    RETURN {
+      "citta_1": citta_1,
+      "citta_2": citta_2,
+      "IA": IA,
+      "IB": IB,
+      "triangle_I": triangle_I,
+      "panna_state": panna_state,
+      "activity_state": activity_state,
+      "result_state": result_state,
+      "memory_field": memory_field
+    }
+
+END MODULE
